@@ -12,8 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -55,7 +55,6 @@ public class Main {
                 .filter(revisionFilter)
                 .collect(Collectors.toList());
 
-
         for (Instance instance : revisionInstances) {
             String sn = getSymbolicName(instance);
 
@@ -79,13 +78,28 @@ public class Main {
                 root = root.getNearestGCRootPointer();
             }
 
-            // reverse to have same order as in JVisualVM
-            Collections.reverse(rootPath);
-            System.out.println("sn: " + sn);
+            System.out.println("bundle symbolic name: " + sn);
+            String type = "this";
             for (int i = 0; i < rootPath.size(); i++) {
-                int n = 1 + i * 2;
+                Instance node = rootPath.get(i);
+                long nextId = -1;
+                if (i + 1 < rootPath.size()) {
+                    // not last element
+                    nextId = rootPath.get(i + 1).getInstanceId();
+                }
+                long finalNextId = nextId;
+                // find reference to next instance on GC path pointing to this one
+                Optional<String> references = ((List<Value>) node.getReferences()).stream()
+                        .filter(r -> finalNextId == r.getDefiningInstance().getInstanceId())
+                        .map(r -> r.getClass().getSimpleName())
+                        .findFirst();
 
-                System.out.format("%" + n + "s * (%s) - (%s)\n", "", rootPath.get(i), rootPath.get(i).getJavaClass().getName());
+                String className = node.getJavaClass().getName();
+
+                int n = 1 + i * 2;
+                String indent = String.format("%" + n + "s ~> ", "");
+                System.out.println(String.format("%s (%s) - class %s", indent, type, className));
+                type = references.orElse("not found");
             }
         }
     }
