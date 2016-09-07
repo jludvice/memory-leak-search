@@ -14,7 +14,7 @@ mvn clean package
 
 1. take heap dump with command
     ```shell
-    jmap -dump:format=b,file=file_with_heapdump.hprof PID
+    jmap -dump:live,format=b,file=file_with_heapdump.hprof PID
     ```
 
 1. pass dump to this program
