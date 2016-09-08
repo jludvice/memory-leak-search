@@ -97,7 +97,7 @@ public class Main {
                 String className = node.getJavaClass().getName();
 
                 int n = 1 + i * 2;
-                String indent = String.format("%" + n + "s ~> ", "");
+                String indent = String.format("%" + n + "s <- ", "");
                 System.out.println(String.format("%s (%s) - class %s", indent, type, className));
                 type = references.orElse("not found");
             }
